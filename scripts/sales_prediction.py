@@ -33,8 +33,6 @@ vectorizer = CountVectorizer()
 vectorizer.fit(game_titles)
 name_vectors = vectorizer.transform(game_titles)
 
-X_names = X.columns
-
 # Then we can hand the rest of our data to OneHotEncoder.
 # We have to separate our other data from our title data and transform it.
 print("Encoding year, platform, genre, and publisher data...")
@@ -102,3 +100,7 @@ else:
     predicted_sales = model.predict(game_vector_normalized)
     print("Voila!")
     print(f"Predicted sales: ${', '.join(map(str,predicted_sales))} million.")
+
+    # Calculate the r-squared value of the model
+    r2 = model.score(X_normalized, y)
+    print(f"R-squared value of the model: {r2}.")
