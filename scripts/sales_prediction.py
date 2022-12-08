@@ -33,13 +33,14 @@ vectorizer = CountVectorizer()
 vectorizer.fit(game_titles)
 name_vectors = vectorizer.transform(game_titles)
 
+X_names = X.columns
+
 # Then we can hand the rest of our data to OneHotEncoder.
+# We have to separate our other data from our title data and transform it.
 print("Encoding year, platform, genre, and publisher data...")
 encoder = OneHotEncoder(handle_unknown="ignore")
-encoder.fit(X.drop("name", axis=1))
-
-# We have to separate our other data from our title data and transform it.
 X_other = X.drop("name", axis=1)
+encoder.fit(X_other)
 other_vectors = encoder.transform(X_other)
 
 # Now we're going to concatenate both back together.
@@ -67,24 +68,37 @@ platform = input("Enter the platform the game was released on: ")
 genre = input("Enter the genre of your game: ")
 publisher = input("Enter the publisher of your game: ")
 
-print("Thank you!")
+# Check if the input data contains any NaN values
+if any(pd.isnull([title, year, platform, genre, publisher])):
+    print("One or more of the input values is invalid. Please try again.")
+else:
+    print("Thank you!")
 
-# Again, we have to do some magic to the title to transform it into usable data.
-print("Processing user inputs...")
-game_title_vector = vectorizer.transform([title])
+    # Again, we have to do some magic to the title to transform it into usable data.
+    print("Processing user inputs...")
 
-# And now we're going to transform the other data via our encoder.
-game_other_vectors = encoder.transform([[year, platform, genre, publisher]])
+    game_title_vector = vectorizer.transform([title])
 
-# Again, we have to concatenate these into a single set of data.
-game_vector = hstack([game_title_vector, game_other_vectors])
+    # We need to create a DataFrame that contains the other data for the game the user has input.
+    game_other = pd.DataFrame(data={
+        "year": [year],
+        "platform": [platform],
+        "genre": [genre],
+        "publisher": [publisher]
+    })
 
-# And normalize the result so that it vibes with our other data.
-game_vector_normalized = scaler.transform(game_vector)
+    # And now we can transform the other data for the game via our encoder, passing the feature names as a parameter.
+    game_other_vectors = encoder.transform(game_other)
 
-# And finally we can predict our hypothetical game's sales based on the data
-# we've input. Voila!
-print("Creating sales prediction...")
-predicted_sales = model.predict(game_vector_normalized)
-print("Voila!")
-print(f"Predicted sales: ${', '.join(map(str,predicted_sales))} million.")
+    # Again, we have to concatenate these into a single set of data.
+    game_vector = hstack([game_title_vector, game_other_vectors])
+
+    # And normalize the result so that it vibes with our other data.
+    game_vector_normalized = scaler.transform(game_vector)
+
+    # And finally we can predict our hypothetical game's sales based on the data
+    # we've input. Voila!
+    print("Creating sales prediction...")
+    predicted_sales = model.predict(game_vector_normalized)
+    print("Voila!")
+    print(f"Predicted sales: ${', '.join(map(str,predicted_sales))} million.")
