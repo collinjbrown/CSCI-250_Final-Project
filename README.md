@@ -26,3 +26,4 @@
       - "One option is to use a library like matplotlib or seaborn to create a scatter plot of your data and show how well the model fits the data. You can also use a library like plotly to create an interactive visual that allows users to explore the model and its predictions. Additionally, you can use a library like TensorBoard to create visualizations of neural network models."
 
 # Screenshots
+![A screenshot of the command line.](https://github.com/collinjbrown/CSCI-250_Final-Project/blob/9d6301bdf271fb21a1b4e00d28da9eb55cb10596/screenshots/Capture5.PNG)
