@@ -28,4 +28,4 @@
 # Screenshots
 ![A screenshot of the command line.](https://github.com/collinjbrown/CSCI-250_Final-Project/blob/9d6301bdf271fb21a1b4e00d28da9eb55cb10596/screenshots/Capture5.PNG)
 
-The model currently overvalues games with big names like Mario or Wii Sports and undervalues games like Microsoft Flight Simulator, which in real life has sold somewhere around $2 million globally.
+The model currently overvalues games with big names like Mario or Wii Sports and undervalues games like Microsoft Flight Simulator, which in real life has sold somewhere around 2 million copies.
