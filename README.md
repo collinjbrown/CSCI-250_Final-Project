@@ -24,3 +24,5 @@
     - "Adding support for multiple languages. You could use a library like spaCy to automatically detect the language of the user's input and translate it to English before feeding it to the model. This would allow users to enter game titles, platforms, genres, and publishers in their own language, which could make the tool more user-friendly."
     - "Adding a visual representation of the model's performance. You could create a chart or graph that shows how well the model is performing on the data it's been trained on, using metrics like mean squared error and r-squared. This could help users better understand how accurate the model is, and give them more confidence in its predictions."
       - "One option is to use a library like matplotlib or seaborn to create a scatter plot of your data and show how well the model fits the data. You can also use a library like plotly to create an interactive visual that allows users to explore the model and its predictions. Additionally, you can use a library like TensorBoard to create visualizations of neural network models."
+
+# Screenshots
