@@ -9,28 +9,20 @@ def main():
     print(f"Reading training data from {source}.")  # We'll print the path as well, just to provide some transparency.
     data = pd.read_csv(source)                      # Here, we actually get around to reading the data from the source file.
 
-    if not (data):
+    if (data.empty):
         print("Unable to read data source file. Please make sure you have the dataset in the correct position and try again.")
         return
 
     # Next, we select the variables we want to train on. For now, these are the titles, years, platforms, genres, and publishers
     # of each game.
-    X = data[["Name", "Year", "Platform", "Genre", "Publisher"]].rename(columns={
-        "Name": "name",
-        "Year": "year",
-        "Platform": "platform",
-        "Genre": "genre",
-        "Publisher": "publisher"
-    })                                              # We rename these only because I'm used to handling lower case and I don't want
-                                                    # to produce any errors later by having them be upper case.
-
+    X = data[["Name", "Year", "Platform", "Genre", "Publisher"]]
     print("Selecting the data we're going to train on from our dataset...")
 
     # Then we select the target variable. For now, we're focusing on global scales, but we can add individual countries' sales later.
     y = data["Global_Sales"]
 
     # Because we want the user to be able to input arbitrary game titles, we need to do some wizardry to the titles.
-    gameTitles = X["name"].values.tolist()
+    gameTitles = X["Name"].values.tolist()
 
     # We have to vectorize the names so that they can be used as features in our model.
     # Since they're not encodable (there aren't a set number of them) and they aren't ints (years), we need to alter them so that
@@ -44,7 +36,7 @@ def main():
     # We have to separate our other data from our title data and transform it.
     print("Encoding year, platform, genre, and publisher data...")
     encoder = OneHotEncoder(handle_unknown="ignore")
-    xOther = X.drop("name", axis=1)
+    xOther = X.drop("Name", axis=1)
     encoder.fit(xOther)
     otherVectors = encoder.transform(xOther)
 
@@ -90,10 +82,10 @@ def main():
     gameTitleVector = vectorizer.transform([title])
 
     gameOther = pd.DataFrame(data={
-        "year": [year],
-        "platform": [platform],
-        "genre": [genre],
-        "publisher": [publisher]
+        "Year": [year],
+        "Platform": [platform],
+        "Genre": [genre],
+        "Publisher": [publisher]
     })
 
     # And now we can transform the other data for the game via our encoder, passing the feature names as a parameter.
@@ -110,12 +102,15 @@ def main():
     print("Creating sales prediction...")
     predictedSales = model.predict(gameVectorNormalized)
     print("Voila!")
+    predictedSales[0] = predictedSales.round(4)
     print(f"Predicted sales: ${', '.join(map(str,predictedSales))} million.")
 
     # We're also going to calculate the r-squared of the model, just for kicks.
     # I wanted to see how accurate the model was.
     r2 = model.score(xNormalized, y)
+    r2 = r2.round(8)
     print(f"R-squared value of the model: {r2}.")
+    return
 
 
 if __name__ == "__main__":
