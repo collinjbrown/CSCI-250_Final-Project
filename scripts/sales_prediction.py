@@ -33,6 +33,8 @@ def main():
     gameTitles = X["name"].values.tolist()
 
     # We have to vectorize the names so that they can be used as features in our model.
+    # Since they're not encodable (there aren't a set number of them) and they aren't ints (years), we need to alter them so that
+    # we can pass them to our model.
     print("Vectorizing game titles...")
     vectorizer = CountVectorizer()
     vectorizer.fit(gameTitles)
