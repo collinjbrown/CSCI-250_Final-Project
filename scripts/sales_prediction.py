@@ -1,13 +1,19 @@
 import pandas as pd
 
+import random
 import sys
+
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QLineEdit, QVBoxLayout, QComboBox
-from PyQt5.QtChart import QChart, QLineSeries, QCategoryAxis, QChartView
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import OneHotEncoder, MaxAbsScaler
 from scipy.sparse import hstack
+
+from matplotlib.backends.backend_qt5agg import FigureCanvas, NavigationToolbar2QT
+
+from matplotlib.figure import Figure
+import seaborn
 
 model = None
 vectorizer = None
@@ -15,7 +21,7 @@ encoder = None
 scaler = None
 
 class MainWindow(QWidget):
-    def __init__(self):
+    def __init__(self, graph_data):
         super().__init__()
         self.setWindowTitle("Video Game Sales Predictor")
         self.setMinimumWidth(400)
@@ -60,20 +66,20 @@ class MainWindow(QWidget):
         self.prediction_label = QLabel("Predicted Global Sales:")
         self.prediction_output = QLineEdit()
         self.prediction_output.setReadOnly(True)
-        
-        # # Create a chart to display the prediction.
-        # self.chart = QChart()
-        # self.chart.setAnimationOptions(QChart.AllAnimations)
-        # self.series = QLineSeries()
-        # self.chart.addSeries(self.series)
-        # self.chart.createDefaultAxes()
-        # self.chart.axisX().setRange(1980, 2020)
-        # self.chart.axisY().setRange(0, 50)
-        # self.chart.axisX().setLabelsVisible(False)
-        # self.chart.axisY().setLabelsVisible(False)
-        # self.chart.legend().hide()
 
-        # self.chart_view = QChartView(self.chart)
+        
+        # Create a chart to display the prediction.
+        self.fig = Figure()
+        self.canvas = FigureCanvas(self.fig)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
+        
+        self.layout.addWidget(self.toolbar)
+        self.layout.addWidget(self.canvas)
+
+        self.ax = self.fig.add_subplot(111)
+        self.ax.clear()
+        self.ax.plot('Global_Sales', 'Year', 'c.', data=graph_data)
+        self.canvas.draw()
 
         self.layout.addWidget(self.title_label)
         self.layout.addWidget(self.title_input)
@@ -88,21 +94,8 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.submit_button)
         self.layout.addWidget(self.prediction_label)
         self.layout.addWidget(self.prediction_output)
-        # self.layout.addWidget(self.chart_view)
 
         self.setLayout(self.layout)
-
-    # def update_chart(self, x_values, y_values, x_values_line, y_values_line):
-    #     self.series.clear()
-    #     self.series.append(x_values, y_values)
-    #     self.series.setMarkerSize(8)
-
-    #     self.line_series = QLineSeries()
-    #     self.line_series.append(x_values_line, y_values_line)
-    #     self.chart.addSeries(self.line_series)
-
-    #     self.chart.axisX().setRange(min(x_values), max(x_values))
-    #     self.chart.axisY().setRange(min(y_values), max(y_values))
 
     def predict(self):
         title = self.title_input.text()
@@ -135,9 +128,13 @@ class MainWindow(QWidget):
 
         self.prediction_output.setText(str(prediction))
 
-        # self.series.append(year, prediction)
+        new_data = {'Year': [game_other["Year"]], 'Global_Sales': [prediction]}
+        
+        color_set = random.choice([ 'b', 'g', 'r', 'm', 'y' ])
+        style = '{}.'.format(color_set)
 
-        # self.update_chart()
+        self.ax.plot('Global_Sales', 'Year', style, data=new_data)
+        self.canvas.draw()
 
 def main():
     global model, vectorizer, encoder, scaler
@@ -195,49 +192,19 @@ def main():
     x_normalized = x_normalized[:len(y)]
     model.fit(x_normalized, y)
     print("Model trained!")
-    
+
+    # We're also going to calculate the r-squared of the model, just for kicks.
+    # I wanted to see how accurate the model was.
+    r2 = model.score(x_normalized, y)
+    r2 = r2.round(8)
+    print(f"R-squared value of the model: {r2}.")
+
+    graph_data = data[["Year", "Global_Sales"]]
+
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = MainWindow(graph_data)
     window.show()
     sys.exit(app.exec_())
-
-    ## Again, we have to do some magic to the title to transform it into usable data.
-    #print("Processing user inputs...")
-
-    ## We were running into a pernicious error, where OneHotEncoder would complain that
-    ## it was fitted to data with feature names while the data being predicted lacked
-    ## names, so we've added this to fix that:
-    #game_title_vector = vectorizer.transform([title])
-
-    #gameOther = pd.DataFrame(data={
-    #    "Year": [year],
-    #    "Platform": [platform],
-    #    "Genre": [genre],
-    #    "Publisher": [publisher]
-    #})
-
-    ## And now we can transform the other data for the game via our encoder, passing the feature names as a parameter.
-    #gameOtherVectors = encoder.transform(gameOther)
-
-    ## Again, we have to concatenate these into a single set of data.
-    #gameVector = hstack([gameTitleVector, gameOtherVectors])
-
-    ## And normalize the result so that it vibes with our other data.
-    #gameVectorNormalized = scaler.transform(gameVector)
-
-    ## And finally we can predict our hypothetical game's sales based on the data
-    ## we've input. Voila!
-    #print("Creating sales prediction...")
-    #predictedSales = model.predict(gameVectorNormalized)
-    #print("Voila!")
-    #predictedSales[0] = predictedSales.round(4)
-    #print(f"Predicted sales: ${', '.join(map(str,predictedSales))} million.")
-
-    ## We're also going to calculate the r-squared of the model, just for kicks.
-    ## I wanted to see how accurate the model was.
-    #r2 = model.score(xNormalized, y)
-    #r2 = r2.round(8)
-    #print(f"R-squared value of the model: {r2}.")
 
 if __name__ == "__main__":
     main()
