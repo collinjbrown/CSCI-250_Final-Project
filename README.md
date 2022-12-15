@@ -4,6 +4,7 @@
 
 
 # Instructions
+## Command Line
  - Open anaconda or conda prompt or whatever you use to run py scripts.
  - Path to the folder that contains this readme.
  - Run "python scripts/sales_prediction.py"
@@ -14,9 +15,14 @@
     genre that isn't represented in our data.
  - Wait half a second (quite literally) for the prediction to be generated.
  - Enjoy!
+
+## IDE
+ - Open Visual Studio or VS Code or whatever your preferred IDE is.
+ - Run 'sales_prediction.py'.
+ - Voila!
  
 # To Do
- - Add an interface to make interactions easier (and more constrained).
+ - ~~Add an interface to make interactions easier (and more constrained).~~
  - Add some neat features such as allowing the prediction of sales in particular countries.
  - ChatGPT has recommended the following features:
     - "Implement a recommendation system to suggest games to users based on their input data and the sales data."
@@ -27,5 +33,8 @@
 
 # Screenshots
 ![A screenshot of the command line.](https://github.com/collinjbrown/CSCI-250_Final-Project/blob/9d6301bdf271fb21a1b4e00d28da9eb55cb10596/screenshots/Capture5.PNG)
+
+
+![A screenshot of the interface.](https://github.com/collinjbrown/CSCI-250_Final-Project/blob/9d6301bdf271fb21a1b4e00d28da9eb55cb10596/screenshots/Capture5.PNG)
 
 The model currently overvalues games with big names like Mario or Wii Sports and undervalues games like Microsoft Flight Simulator, which in real life has sold somewhere around 2 million copies.
