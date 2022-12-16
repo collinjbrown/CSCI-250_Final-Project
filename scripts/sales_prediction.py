@@ -11,9 +11,12 @@ from sklearn.preprocessing import OneHotEncoder, MaxAbsScaler
 from scipy.sparse import hstack
 
 from matplotlib.backends.backend_qt5agg import FigureCanvas, NavigationToolbar2QT
+#from matplotlib.backends.backend_qt5agg import FigureCanvasQTagg as figure
+import matplotlib
+import matplotlib.pyplot as plt
 
 from matplotlib.figure import Figure
-import seaborn
+import seaborn as sb
 
 model = None
 vectorizer = None
@@ -24,8 +27,8 @@ class MainWindow(QWidget):
     def __init__(self, graph_data):
         super().__init__()
         self.setWindowTitle("Video Game Sales Predictor")
-        self.setMinimumWidth(400)
-        self.setMinimumHeight(400)
+        self.setMinimumWidth(800)
+        self.setMinimumHeight(800)
 
         # Create a layout for the window.
         self.layout = QVBoxLayout()
@@ -43,20 +46,28 @@ class MainWindow(QWidget):
         # Create a label and combo box for the game platform.
         self.platform_label = QLabel("Enter the platform the game was released on:")
         self.platform_input = QComboBox()
-        platforms = ["Wii", "WiiU", "NES", "SNES", "N64", "GB", "GC", "DS", "3DS", "XB", "X360", "XOne", "PS", "PSP", "PS2", "PS3", "PS4", "PC", "Atari"]
+        platforms = graph_data["Platform"].unique()
+        platforms.sort()
         for platform in platforms:
             self.platform_input.addItem(platform)
 
         # Create a label and combo box for the game genre.
         self.genre_label = QLabel("Enter the genre of your game:")
         self.genre_input = QComboBox()
-        genres = ["Sports", "Platform", "Racing", "Role-Playing", "Shooter", "Simulation", "Action", "Puzzle", "Fighting", "Misc"]
+        genres = graph_data["Genre"].unique()
+        genres.sort()
         for genre in genres:
             self.genre_input.addItem(genre)
-
+            
         # Create a label and line edit for the game publisher.
         self.publisher_label = QLabel("Enter the publisher of your game:")
-        self.publisher_input = QLineEdit()
+        self.publisher_input = QComboBox()
+        # This creates a big dropdown box of publishers.
+        publishers = graph_data["Publisher"].unique()
+        for publisher in publishers:
+            self.publisher_input.addItem(str(publisher))
+        # Publishers has issues for some reason, have to use a different method to sort
+        self.publisher_input.model().sort(0)
 
         # Create a button to submit the user input.
         self.submit_button = QPushButton("Predict Sales")
@@ -67,19 +78,43 @@ class MainWindow(QWidget):
         self.prediction_output = QLineEdit()
         self.prediction_output.setReadOnly(True)
 
+        # Let user pick which axis to graph
+        self.graphlabel = QLabel("Pick Category for x-axis:")
+        self.xlabel = QComboBox()
+        self.xlabel.addItem('Genre', genres)
+        self.xlabel.addItem('Platform', platforms)
+        # addItems() in update_xlabel() does not like publishers for some reason
+        # exclude for now
+        # self.xlabel.addItem('Publisher', publishers)
         
+        # Let user pick which subcategory to graph
+        self.xaxis = QComboBox()
+        self.xlabel.currentIndexChanged.connect(self.update_xlabel)
+        self.update_xlabel(self.xlabel.currentIndex())
+
         # Create a chart to display the prediction.
+        # Testing chart creation atm...
         self.fig = Figure()
         self.canvas = FigureCanvas(self.fig)
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
-        
+
         self.layout.addWidget(self.toolbar)
         self.layout.addWidget(self.canvas)
 
-        self.ax = self.fig.add_subplot(111)
-        self.ax.clear()
-        self.ax.plot('Global_Sales', 'Year', 'c.', data=graph_data)
+        self.axs = self.fig.subplots(1, 2, sharey=True)
+        Wii = graph_data[graph_data['Platform'] == 'Wii']
+        PS2 = graph_data[graph_data['Platform'] == 'PS2']
+        self.axs[0].plot(Wii.Year, Wii.Global_Sales, 'c.', markersize = 1)
+        self.axs[1].plot(PS2.Year, PS2.Global_Sales, 'c.')
         self.canvas.draw()
+              
+
+    def update_xlabel(self, index):
+        self.xaxis.clear()
+        sub_categories = self.xlabel.itemData(index)
+        if any(sub_categories):
+            self.xaxis.addItems(sub_categories)
+        self.xaxis.model().sort(0)
 
         self.layout.addWidget(self.title_label)
         self.layout.addWidget(self.title_input)
@@ -94,6 +129,10 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.submit_button)
         self.layout.addWidget(self.prediction_label)
         self.layout.addWidget(self.prediction_output)
+
+        self.layout.addWidget(self.graphlabel)
+        self.layout.addWidget(self.xlabel)
+        self.layout.addWidget(self.xaxis)
 
         self.setLayout(self.layout)
 
@@ -132,6 +171,8 @@ class MainWindow(QWidget):
         
         color_set = random.choice([ 'b', 'g', 'r', 'm', 'y' ])
         style = '{}.'.format(color_set)
+
+        
 
         self.ax.plot('Global_Sales', 'Year', style, data=new_data)
         self.canvas.draw()
@@ -199,11 +240,9 @@ def main():
     r2 = r2.round(8)
     print(f"R-squared value of the model: {r2}.")
 
-    graph_data = data[["Year", "Global_Sales"]]
-
     app = QApplication(sys.argv)
-    window = MainWindow(graph_data)
-    window.show()
+    window = MainWindow(data) # Took out graph_data and passed the data instead
+    window.show()             # Manipulate dataframe inside MainWindow class instead
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
