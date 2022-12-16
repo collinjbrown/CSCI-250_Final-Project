@@ -77,21 +77,7 @@ class MainWindow(QWidget):
         self.prediction_label = QLabel("Predicted Global Sales:")
         self.prediction_output = QLineEdit()
         self.prediction_output.setReadOnly(True)
-
-        # Let user pick which axis to graph
-        self.graphlabel = QLabel("Pick Category for x-axis:")
-        self.xlabel = QComboBox()
-        self.xlabel.addItem('Genre', genres)
-        self.xlabel.addItem('Platform', platforms)
-        # addItems() in update_xlabel() does not like publishers for some reason
-        # exclude for now
-        # self.xlabel.addItem('Publisher', publishers)
         
-        # Let user pick which subcategory to graph
-        self.xaxis = QComboBox()
-        self.xlabel.currentIndexChanged.connect(self.update_xlabel)
-        self.update_xlabel(self.xlabel.currentIndex())
-
         # Create a chart to display the prediction.
         # Testing chart creation atm...
         self.fig = Figure()
@@ -102,9 +88,12 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.canvas)
 
         # These are test plots, plot #3 is in def predict()
+        self.graph_data = graph_data
         self.axs = self.fig.subplots(1, 2)
-        Wii = graph_data[graph_data['Platform'] == 'Wii']
-        self.axs[0].plot(Wii.Year, Wii.Global_Sales, 'c.', markersize = 1)
+        self.select_genre = 'Sports'
+        self.select_platform = 'Wii'
+        var_graph_data = graph_data[graph_data['Platform'] == self.select_platform]
+        self.axs[0].plot(var_graph_data.Year, var_graph_data.Global_Sales, 'c.', markersize = 1)
         self.axs[1].plot('Year', 'Global_Sales', 'c.', data=graph_data)
         self.canvas.draw()
 
@@ -122,20 +111,59 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.prediction_label)
         self.layout.addWidget(self.prediction_output)
 
-        self.layout.addWidget(self.graphlabel)
-        self.layout.addWidget(self.xlabel)
-        self.layout.addWidget(self.xaxis)
-
         self.setLayout(self.layout)
 
+        # Let user pick which axis to graph
+        self.x_label = QLabel("Pick a category to view a chart of:")
+        self.x_label = QComboBox()
+        self.x_label.addItem("Genre")
+        self.x_label.addItem("Platform")
+        self.x_label.currentIndexChanged.connect(self.update_label)
 
-    def update_xlabel(self, index):
-        self.xaxis.clear()
-        sub_categories = self.xlabel.itemData(index)
-        if any(sub_categories):
-            self.xaxis.addItems(sub_categories)
-        self.xaxis.model().sort(0)
+        self.x_choice = QComboBox()
+        self.x_choice.currentIndexChanged.connect(self.update_choice)
+        self.update_label()
+        
+        self.layout.addWidget(self.x_label)
+        self.layout.addWidget(self.x_choice)
 
+
+    def update_label(self):
+        label = self.x_label.currentText()
+        
+        if label == 'Genre':
+            genres = self.graph_data["Genre"].unique()
+            self.x_choice.clear()
+            genres.sort()
+            for genre in genres:
+                self.x_choice.addItem(genre)
+        else:
+            platforms = self.graph_data["Platform"].unique()
+            self.x_choice.clear()
+            platforms.sort()
+            for platform in platforms:
+                self.x_choice.addItem(platform)
+
+        self.update_choice()
+                
+    def update_choice(self):
+        self.axs[0].clear()
+
+        label = self.x_label.currentText()
+        
+        new_data = ''
+
+        if label == 'Genre':
+            self.select_genre = self.x_choice.currentText()
+            new_data = self.graph_data[self.graph_data['Genre'] == self.select_genre]
+        else:
+            self.select_platform = self.x_choice.currentText()
+            new_data = self.graph_data[self.graph_data['Platform'] == self.select_platform]
+            
+        self.axs[0].clear()
+        self.axs[0].plot(new_data.Year, new_data.Global_Sales, 'c.')
+        self.canvas.draw()
+        
     def predict(self):
         title = self.title_input.text()
         year = int(self.year_input.currentText())
