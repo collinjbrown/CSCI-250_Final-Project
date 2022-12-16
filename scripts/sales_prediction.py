@@ -102,19 +102,11 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.canvas)
 
         # These are test plots, plot #3 is in def predict()
-        self.axs = self.fig.subplots(1, 3)
+        self.axs = self.fig.subplots(1, 2)
         Wii = graph_data[graph_data['Platform'] == 'Wii']
-        PS2 = graph_data[graph_data['Platform'] == 'PS2']
         self.axs[0].plot(Wii.Year, Wii.Global_Sales, 'c.', markersize = 1)
-        self.axs[1].plot(PS2.Year, PS2.Global_Sales, 'c.')
-        self.canvas.draw()              
-
-    def update_xlabel(self, index):
-        self.xaxis.clear()
-        sub_categories = self.xlabel.itemData(index)
-        if any(sub_categories):
-            self.xaxis.addItems(sub_categories)
-        self.xaxis.model().sort(0)
+        self.axs[1].plot('Year', 'Global_Sales', 'c.', data=graph_data)
+        self.canvas.draw()
 
         self.layout.addWidget(self.title_label)
         self.layout.addWidget(self.title_input)
@@ -135,6 +127,14 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.xaxis)
 
         self.setLayout(self.layout)
+
+
+    def update_xlabel(self, index):
+        self.xaxis.clear()
+        sub_categories = self.xlabel.itemData(index)
+        if any(sub_categories):
+            self.xaxis.addItems(sub_categories)
+        self.xaxis.model().sort(0)
 
     def predict(self):
         title = self.title_input.text()
@@ -171,10 +171,8 @@ class MainWindow(QWidget):
         
         color_set = random.choice([ 'b', 'g', 'r', 'm', 'y' ])
         style = '{}.'.format(color_set)
-
         
-        self.axs[2].clear()
-        self.axs[2].plot('Global_Sales', 'Year', style, data=new_data)
+        self.axs[1].plot('Year', 'Global_Sales', style, data=new_data)
         self.canvas.draw()
 
 def main():
