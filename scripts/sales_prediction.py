@@ -24,7 +24,7 @@ class MainWindow(QWidget):
     def __init__(self, graph_data):
         super().__init__()
         self.setWindowTitle("Video Game Sales Predictor")
-        self.setMinimumWidth(800)
+        self.setMinimumWidth(1600)
         self.setMinimumHeight(800)
 
         # Create a layout for the window.
@@ -101,12 +101,21 @@ class MainWindow(QWidget):
 
         # These are test plots, plot #3 is in def predict()
         self.graph_data = graph_data
-        self.axs = self.fig.subplots(1, 2)
+        self.axs = self.fig.subplots(1, 5)
         self.select_genre = 'Sports'
         self.select_platform = 'Wii'
         var_graph_data = graph_data[graph_data['Platform'] == self.select_platform]
         self.axs[0].plot(var_graph_data.Year, var_graph_data.Global_Sales, 'c.', markersize = 1)
-        self.axs[1].plot('Year', 'Global_Sales', 'c.', data=graph_data)
+        self.axs[1].plot('Year', 'NA_Sales', 'r.', data=graph_data)
+        self.axs[2].plot('Year', 'EU_Sales', 'm.', data=graph_data)
+        self.axs[3].plot('Year', 'JP_Sales', 'g.', data=graph_data)
+        self.axs[4].plot('Year', 'Global_Sales', 'c.', data=graph_data)
+
+        self.axs[1].set_title("North American Sales Per Year")
+        self.axs[2].set_title("EU Sales Per Year")
+        self.axs[3].set_title("Japanese Sales Per Year")
+        self.axs[4].set_title("Global Sales Per Year")
+
         self.canvas.draw()
 
         self.layout.addWidget(self.title_label)
@@ -171,14 +180,16 @@ class MainWindow(QWidget):
         
         new_data = ''
 
+        self.axs[0].clear()
         if label == 'Genre':
             self.select_genre = self.x_choice.currentText()
+            self.axs[0].set_title(f"{self.select_genre} Sales Per Year")
             new_data = self.graph_data[self.graph_data['Genre'] == self.select_genre]
         else:
             self.select_platform = self.x_choice.currentText()
+            self.axs[0].set_title(f"{self.select_platform} Sales Per Year")
             new_data = self.graph_data[self.graph_data['Platform'] == self.select_platform]
             
-        self.axs[0].clear()
         self.axs[0].plot(new_data.Year, new_data.Global_Sales, 'c.')
         self.canvas.draw()
         
@@ -225,7 +236,10 @@ class MainWindow(QWidget):
         color_set = random.choice([ 'b', 'g', 'r', 'm', 'y' ])
         style = '{}.'.format(color_set)
         
-        self.axs[1].plot('Year', 'Global_Sales', style, data=new_data)
+        self.axs[1].plot('Year', 'NA_Sales', style, data=new_data)
+        self.axs[2].plot('Year', 'EU_Sales', style, data=new_data)
+        self.axs[3].plot('Year', 'JP_Sales', style, data=new_data)
+        self.axs[4].plot('Year', 'Global_Sales', style, data=new_data)
         self.canvas.draw()
 
 def main():
