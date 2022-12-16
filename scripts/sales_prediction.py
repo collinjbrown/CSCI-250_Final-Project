@@ -101,13 +101,13 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.toolbar)
         self.layout.addWidget(self.canvas)
 
-        self.axs = self.fig.subplots(1, 2, sharey=True)
+        # These are test plots, plot #3 is in def predict()
+        self.axs = self.fig.subplots(1, 3)
         Wii = graph_data[graph_data['Platform'] == 'Wii']
         PS2 = graph_data[graph_data['Platform'] == 'PS2']
         self.axs[0].plot(Wii.Year, Wii.Global_Sales, 'c.', markersize = 1)
         self.axs[1].plot(PS2.Year, PS2.Global_Sales, 'c.')
-        self.canvas.draw()
-              
+        self.canvas.draw()              
 
     def update_xlabel(self, index):
         self.xaxis.clear()
@@ -141,7 +141,7 @@ class MainWindow(QWidget):
         year = int(self.year_input.currentText())
         platform = self.platform_input.currentText()
         genre = self.genre_input.currentText()
-        publisher = self.publisher_input.text()
+        publisher = self.publisher_input.currentText()
     
         # Check if the input data contains any NaN values.
         if any(pd.isnull([title, year, platform, genre, publisher])):
@@ -173,8 +173,8 @@ class MainWindow(QWidget):
         style = '{}.'.format(color_set)
 
         
-
-        self.ax.plot('Global_Sales', 'Year', style, data=new_data)
+        self.axs[2].clear()
+        self.axs[2].plot('Global_Sales', 'Year', style, data=new_data)
         self.canvas.draw()
 
 def main():
