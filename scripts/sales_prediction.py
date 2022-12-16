@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QLineEdi
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import OneHotEncoder, MaxAbsScaler
+from sklearn.multioutput import MultiOutputRegressor
 from scipy.sparse import hstack
 
 from matplotlib.backends.backend_qt5agg import FigureCanvas, NavigationToolbar2QT
@@ -69,11 +70,26 @@ class MainWindow(QWidget):
         self.submit_button = QPushButton("Predict Sales")
         self.submit_button.clicked.connect(self.predict)
 
-        # Create a label and line edit to display the prediction.
-        self.prediction_label = QLabel("Predicted Global Sales:")
-        self.prediction_output = QLineEdit()
-        self.prediction_output.setReadOnly(True)
+        # Create a label and line edit to display the global sales prediction.
+        self.gb_prediction_label = QLabel("Predicted Global Sales:")
+        self.gb_prediction_output = QLineEdit()
+        self.gb_prediction_output.setReadOnly(True)
         
+        # Create a label and line edit to display the North American sales prediction.
+        self.na_prediction_label = QLabel("Predicted North American Sales:")
+        self.na_prediction_output = QLineEdit()
+        self.na_prediction_output.setReadOnly(True)
+        
+        # Create a label and line edit to display the EU sales prediction.
+        self.eu_prediction_label = QLabel("Predicted EU Sales:")
+        self.eu_prediction_output = QLineEdit()
+        self.eu_prediction_output.setReadOnly(True)
+        
+        # Create a label and line edit to display the Japanese sales prediction.
+        self.jp_prediction_label = QLabel("Predicted Japanese Sales:")
+        self.jp_prediction_output = QLineEdit()
+        self.jp_prediction_output.setReadOnly(True)
+
         # Create a chart to display the prediction.
         # Testing chart creation atm...
         self.fig = Figure()
@@ -104,8 +120,14 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.publisher_label)
         self.layout.addWidget(self.publisher_input)
         self.layout.addWidget(self.submit_button)
-        self.layout.addWidget(self.prediction_label)
-        self.layout.addWidget(self.prediction_output)
+        self.layout.addWidget(self.gb_prediction_label)
+        self.layout.addWidget(self.gb_prediction_output)
+        self.layout.addWidget(self.na_prediction_label)
+        self.layout.addWidget(self.na_prediction_output)
+        self.layout.addWidget(self.eu_prediction_label)
+        self.layout.addWidget(self.eu_prediction_output)
+        self.layout.addWidget(self.jp_prediction_label)
+        self.layout.addWidget(self.jp_prediction_output)
 
         self.setLayout(self.layout)
 
@@ -186,10 +208,17 @@ class MainWindow(QWidget):
         game_vector_normalized = scaler.transform(game_vector)
 
         prediction = model.predict(game_vector_normalized)[0]
+        print(prediction)
 
-        prediction = prediction.round(4)
+        gb_prediction = prediction[0].round(4)
+        na_prediction = prediction[1].round(4)
+        eu_prediction = prediction[2].round(4)
+        jp_prediction = prediction[3].round(4)
 
-        self.prediction_output.setText(str(prediction))
+        self.gb_prediction_output.setText(str(gb_prediction))
+        self.na_prediction_output.setText(str(na_prediction))
+        self.eu_prediction_output.setText(str(eu_prediction))
+        self.jp_prediction_output.setText(str(jp_prediction))
 
         new_data = {'Year': [game_other["Year"]], 'Global_Sales': [prediction]}
         
@@ -217,7 +246,7 @@ def main():
     print(X)
 
     # Then we select the target variable. For now, we're focusing on global scales, but we can add individual countries' sales later.
-    y = data["Global_Sales"]
+    y = data[["Global_Sales", "NA_Sales", "EU_Sales", "JP_Sales"]]
 
     # Because we want the user to be able to input arbitrary game titles, we need to do some wizardry to the titles.
     game_titles = X["Name"].values.tolist()
@@ -251,7 +280,7 @@ def main():
     # We went with a Random Forest model because it provides more accurate predictions
     # for the kind of data we're dealing with.
     print("Training random forest regression model on our data...")
-    model = RandomForestRegressor(n_estimators=10)
+    model = MultiOutputRegressor(RandomForestRegressor(n_estimators=10))
     x_normalized = x_normalized[:len(y)]
     model.fit(x_normalized, y)
     print("Model trained!")
