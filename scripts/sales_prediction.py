@@ -11,12 +11,8 @@ from sklearn.preprocessing import OneHotEncoder, MaxAbsScaler
 from scipy.sparse import hstack
 
 from matplotlib.backends.backend_qt5agg import FigureCanvas, NavigationToolbar2QT
-#from matplotlib.backends.backend_qt5agg import FigureCanvasQTagg as figure
-import matplotlib
-import matplotlib.pyplot as plt
 
 from matplotlib.figure import Figure
-import seaborn as sb
 
 model = None
 vectorizer = None
@@ -114,7 +110,7 @@ class MainWindow(QWidget):
         self.setLayout(self.layout)
 
         # Let user pick which axis to graph
-        self.x_label = QLabel("Pick a category to view a chart of:")
+        self.x_label_label = QLabel("Pick a category to view a chart of:") # :p
         self.x_label = QComboBox()
         self.x_label.addItem("Genre")
         self.x_label.addItem("Platform")
@@ -124,10 +120,10 @@ class MainWindow(QWidget):
         self.x_choice.currentIndexChanged.connect(self.update_choice)
         self.update_label()
         
+        self.layout.addWidget(self.x_label_label)
         self.layout.addWidget(self.x_label)
         self.layout.addWidget(self.x_choice)
-
-
+        
     def update_label(self):
         label = self.x_label.currentText()
         
