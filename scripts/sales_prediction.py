@@ -1,3 +1,5 @@
+# Group Members: Paul Sihavong, Marley Constonsio Arnaldo, and Collin Brown
+
 import pandas as pd
 
 import random
@@ -231,15 +233,18 @@ class MainWindow(QWidget):
         self.eu_prediction_output.setText(str(eu_prediction))
         self.jp_prediction_output.setText(str(jp_prediction))
 
-        new_data = {'Year': [game_other["Year"]], 'Global_Sales': [prediction]}
+        gb_data = {'Year': [game_other["Year"]], 'Global_Sales': [prediction[0]]}
+        na_data = {'Year': [game_other["Year"]], 'Global_Sales': [prediction[1]]}
+        eu_data = {'Year': [game_other["Year"]], 'Global_Sales': [prediction[2]]}
+        jp_data = {'Year': [game_other["Year"]], 'Global_Sales': [prediction[3]]}
         
         color_set = random.choice([ 'b', 'g', 'r', 'm', 'y' ])
         style = '{}.'.format(color_set)
         
-        self.axs[1].plot('Year', 'NA_Sales', style, data=new_data)
-        self.axs[2].plot('Year', 'EU_Sales', style, data=new_data)
-        self.axs[3].plot('Year', 'JP_Sales', style, data=new_data)
-        self.axs[4].plot('Year', 'Global_Sales', style, data=new_data)
+        self.axs[1].plot('Year', 'NA_Sales', style, data=na_data)
+        self.axs[2].plot('Year', 'EU_Sales', style, data=eu_data)
+        self.axs[3].plot('Year', 'JP_Sales', style, data=jp_data)
+        self.axs[4].plot('Year', 'Global_Sales', style, data=gb_data)
         self.canvas.draw()
 
 def main():
